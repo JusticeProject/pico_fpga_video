@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(pico_fpga_video main.c )
+add_executable(pico_fpga_video main.c graphics.c)
 
 pico_set_program_name(pico_fpga_video "pico_fpga_video")
 pico_set_program_version(pico_fpga_video "0.1")
