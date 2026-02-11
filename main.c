@@ -9,23 +9,44 @@
 
 #define JOYSTICK_GPIO 26
 
+#define LED_GPIO 15
+
+#define START_SIGNAL_GPIO 0
+static PIO start_pio;
+static uint start_sm = 0;
+
 volatile uint16_t current_adc = 0;
 volatile uint32_t counter = 0;
 
-/*void blink_pin_forever(PIO pio, uint sm, uint offset, uint pin, uint freq) {
-    start_signal_program_init(pio, sm, offset, pin);
-    pio_sm_set_enabled(pio, sm, true);
+//*************************************************************************************************
 
-    printf("Blinking pin %d at %d Hz\n", pin, freq);
+bool start_signal_program_init()
+{
+    uint offset;
+    bool success = pio_claim_free_sm_and_add_program_for_gpio_range(
+        &start_signal_program, &start_pio, &start_sm, &offset, START_SIGNAL_GPIO, 1, true);
+    
+    if (!success)
+    {
+        return false;
+    }
 
-    // PIO counter program takes 3 more cycles in total than we pass as
-    // input (wait for n + 1; mov; jmp)
-    pio->txf[sm] = (125000000 / (2 * freq)) - 3;
-}*/
+    pio_gpio_init(start_pio, START_SIGNAL_GPIO);
+    pio_sm_set_consecutive_pindirs(start_pio, start_sm, START_SIGNAL_GPIO, 1, true);
+    pio_sm_config c = start_signal_program_get_default_config(offset);
+    sm_config_set_set_pins(&c, START_SIGNAL_GPIO, 1);
+    pio_sm_init(start_pio, start_sm, offset, &c);
+    pio_sm_set_enabled(start_pio, start_sm, true);
+
+    return true;
+}
+
+//*************************************************************************************************
 
 bool timer_interrupt(struct repeating_timer *t)
 {
-    // TODO: send start signal
+    // send start signal
+    pio_sm_put(start_pio, start_sm, 1);
 
     counter++;
     current_adc = adc_read();
@@ -37,9 +58,15 @@ bool timer_interrupt(struct repeating_timer *t)
     return true; // tell the system to continue the timer
 }
 
+//*************************************************************************************************
+
 int main()
 {
     stdio_init_all();
+
+    // blink an LED so we know the program is running
+    gpio_init(LED_GPIO);
+    gpio_set_dir(LED_GPIO, GPIO_OUT);
 
     adc_init();
     adc_gpio_init(JOYSTICK_GPIO);
@@ -48,17 +75,15 @@ int main()
     struct repeating_timer timer;
     add_repeating_timer_ms(-33, timer_interrupt, NULL, &timer);
 
-    // PIO Blinking example
-    /*PIO pio = pio0;
-    uint offset = pio_add_program(pio, &start_signal_program);
-    printf("Loaded program at %d\n", offset);
-    blink_pin_forever(pio, 0, offset, PICO_DEFAULT_LED_PIN, 3);*/
+    bool success = start_signal_program_init();
 
     while (true)
     {
-        //uint16_t current_adc = adc_read();
         printf("counter = %d  current_adc = %d\n", counter, current_adc);
-        //printf("fifo_level_before = %d  fifo_level_after = %d\n", fifo_level_before, fifo_level_after);
-        sleep_ms(5000);
+        printf("success = %d\n", success ? 1 : 0);
+        gpio_put(LED_GPIO, 0);
+        sleep_ms(1000);
+        gpio_put(LED_GPIO, 1);
+        sleep_ms(1000);
     }
 }
