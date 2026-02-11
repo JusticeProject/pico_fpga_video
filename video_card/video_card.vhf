@@ -7,7 +7,7 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : sch2hdl
 --  /   /         Filename : video_card.vhf
--- /___/   /\     Timestamp : 02/10/2026 17:45:17
+-- /___/   /\     Timestamp : 02/11/2026 15:37:17
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
@@ -26,29 +26,29 @@ library UNISIM;
 use UNISIM.Vcomponents.ALL;
 
 entity video_card is
-   port ( clk         : in    std_logic; 
-          reset       : in    std_logic; 
-          start_async : in    std_logic; 
-          sw0         : in    std_logic; 
-          sw1         : in    std_logic; 
-          hsync       : out   std_logic; 
-          leds        : out   std_logic_vector (7 downto 0); 
-          rgb         : out   std_logic_vector (2 downto 0); 
-          vsync       : out   std_logic);
+   port ( blue_async       : in    std_logic; 
+          clk              : in    std_logic; 
+          data_ready_async : in    std_logic; 
+          green_async      : in    std_logic; 
+          reset            : in    std_logic; 
+          start_async      : in    std_logic; 
+          hsync            : out   std_logic; 
+          leds             : out   std_logic_vector (7 downto 0); 
+          rgb              : out   std_logic_vector (2 downto 0); 
+          vsync            : out   std_logic);
 end video_card;
 
 architecture BEHAVIORAL of video_card is
-   signal XLXN_6      : std_logic_vector (16 downto 0);
-   signal XLXN_11     : std_logic;
-   signal XLXN_13     : std_logic_vector (1 downto 0);
-   signal XLXN_14     : std_logic;
-   signal XLXN_15     : std_logic_vector (16 downto 0);
-   signal XLXN_16     : std_logic_vector (1 downto 0);
-   signal XLXN_21     : std_logic;
-   signal XLXN_22     : std_logic;
-   signal XLXN_23     : std_logic;
-   signal XLXN_24     : std_logic;
-   signal XLXN_25     : std_logic;
+   signal XLXN_6           : std_logic_vector (16 downto 0);
+   signal XLXN_11          : std_logic;
+   signal XLXN_13          : std_logic_vector (1 downto 0);
+   signal XLXN_14          : std_logic;
+   signal XLXN_15          : std_logic_vector (16 downto 0);
+   signal XLXN_16          : std_logic_vector (1 downto 0);
+   signal XLXN_21          : std_logic;
+   signal XLXN_22          : std_logic;
+   signal XLXN_23          : std_logic;
+   signal XLXN_24          : std_logic;
    component vga_sync
       port ( clk      : in    std_logic; 
              reset    : in    std_logic; 
@@ -92,11 +92,6 @@ architecture BEHAVIORAL of video_card is
              sync  : out   std_logic);
    end component;
    
-   component test_generator
-      port ( clk        : in    std_logic; 
-             data_ready : out   std_logic);
-   end component;
-   
    component debug_led_display
       port ( clk       : in    std_logic; 
              testpoint : in    std_logic; 
@@ -138,17 +133,17 @@ begin
                 we=>XLXN_14);
    
    XLXI_6 : synchronizer_2_stage
-      port map (async=>sw1,
+      port map (async=>green_async,
                 clk=>clk,
                 sync=>XLXN_21);
    
    XLXI_7 : synchronizer_2_stage
-      port map (async=>sw0,
+      port map (async=>blue_async,
                 clk=>clk,
                 sync=>XLXN_22);
    
    XLXI_8 : synchronizer_2_stage
-      port map (async=>XLXN_25,
+      port map (async=>data_ready_async,
                 clk=>clk,
                 sync=>XLXN_23);
    
@@ -156,10 +151,6 @@ begin
       port map (async=>start_async,
                 clk=>clk,
                 sync=>XLXN_24);
-   
-   XLXI_10 : test_generator
-      port map (clk=>clk,
-                data_ready=>XLXN_25);
    
    XLXI_11 : debug_led_display
       port map (clk=>clk,

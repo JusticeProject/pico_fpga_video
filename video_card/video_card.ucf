@@ -3,16 +3,16 @@ NET "clk" PERIOD = 20.0ns HIGH 50%;
 
 NET "reset" LOC="K17" | IOSTANDARD = LVTTL | PULLDOWN ;
 
-NET "sw0" LOC="L13" | IOSTANDARD = LVTTL | PULLUP ;
-NET "sw1" LOC="L14" | IOSTANDARD = LVTTL | PULLUP ;
+#NET "sw0" LOC="L13" | IOSTANDARD = LVTTL | PULLUP ;
+#NET "sw1" LOC="L14" | IOSTANDARD = LVTTL | PULLUP ;
 #NET "sw2" LOC="H18" | IOSTANDARD = LVTTL | PULLUP ;
 #NET "sw3" LOC="N17" | IOSTANDARD = LVTTL | PULLUP ;
 
 # J1 connector: pins 1, 2, 3, 4
 NET "start_async" LOC="B4" | IOSTANDARD = LVTTL | SLEW = FAST ;
-#NET "data_ready_async" LOC="A4" | IOSTANDARD = LVTTL | SLEW = FAST ;
-#NET "blue_async" LOC="D5" | IOSTANDARD = LVTTL | SLEW = FAST ;
-#NET "green_async" LOC="C5" | IOSTANDARD = LVTTL | SLEW = FAST ;
+NET "data_ready_async" LOC="A4" | IOSTANDARD = LVTTL | SLEW = FAST ;
+NET "blue_async" LOC="D5" | IOSTANDARD = LVTTL | SLEW = FAST ;
+NET "green_async" LOC="C5" | IOSTANDARD = LVTTL | SLEW = FAST ;
 
 NET "hsync" LOC="F15" | IOSTANDARD = LVTTL | DRIVE = 8 | SLEW = FAST ;
 NET "vsync" LOC="F14" | IOSTANDARD = LVTTL | DRIVE = 8 | SLEW = FAST ;

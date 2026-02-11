@@ -21,20 +21,21 @@
         <signal name="XLXN_22" />
         <signal name="XLXN_23" />
         <signal name="XLXN_24" />
-        <signal name="XLXN_25" />
-        <signal name="sw1" />
-        <signal name="sw0" />
+        <signal name="green_async" />
+        <signal name="blue_async" />
         <signal name="start_async" />
         <signal name="leds(7:0)" />
+        <signal name="data_ready_async" />
         <port polarity="Input" name="clk" />
         <port polarity="Input" name="reset" />
         <port polarity="Output" name="hsync" />
         <port polarity="Output" name="vsync" />
         <port polarity="Output" name="rgb(2:0)" />
-        <port polarity="Input" name="sw1" />
-        <port polarity="Input" name="sw0" />
+        <port polarity="Input" name="green_async" />
+        <port polarity="Input" name="blue_async" />
         <port polarity="Input" name="start_async" />
         <port polarity="Output" name="leds(7:0)" />
+        <port polarity="Input" name="data_ready_async" />
         <blockdef name="vga_sync">
             <timestamp>2026-2-6T17:22:31</timestamp>
             <rect width="256" x="64" y="-256" height="256" />
@@ -92,12 +93,6 @@
             <line x2="0" y1="-32" y2="-32" x1="64" />
             <line x2="384" y1="-96" y2="-96" x1="320" />
         </blockdef>
-        <blockdef name="test_generator">
-            <timestamp>2026-2-7T18:58:0</timestamp>
-            <rect width="256" x="64" y="-64" height="64" />
-            <line x2="0" y1="-32" y2="-32" x1="64" />
-            <line x2="384" y1="-32" y2="-32" x1="320" />
-        </blockdef>
         <blockdef name="debug_led_display">
             <timestamp>2026-2-7T18:58:59</timestamp>
             <rect width="256" x="64" y="-128" height="128" />
@@ -141,27 +136,23 @@
         </block>
         <block symbolname="synchronizer_2_stage" name="XLXI_6">
             <blockpin signalname="clk" name="clk" />
-            <blockpin signalname="sw1" name="async" />
+            <blockpin signalname="green_async" name="async" />
             <blockpin signalname="XLXN_21" name="sync" />
         </block>
         <block symbolname="synchronizer_2_stage" name="XLXI_7">
             <blockpin signalname="clk" name="clk" />
-            <blockpin signalname="sw0" name="async" />
+            <blockpin signalname="blue_async" name="async" />
             <blockpin signalname="XLXN_22" name="sync" />
         </block>
         <block symbolname="synchronizer_2_stage" name="XLXI_8">
             <blockpin signalname="clk" name="clk" />
-            <blockpin signalname="XLXN_25" name="async" />
+            <blockpin signalname="data_ready_async" name="async" />
             <blockpin signalname="XLXN_23" name="sync" />
         </block>
         <block symbolname="synchronizer_2_stage" name="XLXI_9">
             <blockpin signalname="clk" name="clk" />
             <blockpin signalname="start_async" name="async" />
             <blockpin signalname="XLXN_24" name="sync" />
-        </block>
-        <block symbolname="test_generator" name="XLXI_10">
-            <blockpin signalname="clk" name="clk" />
-            <blockpin signalname="XLXN_25" name="data_ready" />
         </block>
         <block symbolname="debug_led_display" name="XLXI_11">
             <blockpin signalname="clk" name="clk" />
@@ -284,21 +275,14 @@
             <wire x2="2832" y1="1760" y2="1760" x1="2784" />
             <wire x2="2784" y1="1760" y2="2224" x1="2784" />
         </branch>
-        <branch name="XLXN_25">
-            <wire x2="2208" y1="2064" y2="2064" x1="2080" />
-        </branch>
-        <branch name="clk">
-            <wire x2="1680" y1="2064" y2="2064" x1="1648" />
-            <wire x2="1696" y1="2064" y2="2064" x1="1680" />
-        </branch>
-        <branch name="sw1">
+        <branch name="green_async">
             <wire x2="2208" y1="1632" y2="1632" x1="2176" />
         </branch>
-        <iomarker fontsize="28" x="2176" y="1632" name="sw1" orien="R180" />
-        <branch name="sw0">
+        <iomarker fontsize="28" x="2176" y="1632" name="green_async" orien="R180" />
+        <branch name="blue_async">
             <wire x2="2208" y1="1840" y2="1840" x1="2176" />
         </branch>
-        <iomarker fontsize="28" x="2176" y="1840" name="sw0" orien="R180" />
+        <iomarker fontsize="28" x="2176" y="1840" name="blue_async" orien="R180" />
         <branch name="start_async">
             <wire x2="2208" y1="2288" y2="2288" x1="2176" />
         </branch>
@@ -313,12 +297,13 @@
         <instance x="3008" y="2256" name="XLXI_11" orien="R0">
         </instance>
         <iomarker fontsize="28" x="2992" y="2160" name="clk" orien="R180" />
-        <instance x="1696" y="2096" name="XLXI_10" orien="R0">
-        </instance>
-        <iomarker fontsize="28" x="1648" y="2064" name="clk" orien="R180" />
         <branch name="reset">
             <wire x2="4160" y1="2080" y2="2080" x1="4128" />
         </branch>
         <iomarker fontsize="28" x="4128" y="2080" name="reset" orien="R180" />
+        <branch name="data_ready_async">
+            <wire x2="2208" y1="2064" y2="2064" x1="2176" />
+        </branch>
+        <iomarker fontsize="28" x="2176" y="2064" name="data_ready_async" orien="R180" />
     </sheet>
 </drawing>
