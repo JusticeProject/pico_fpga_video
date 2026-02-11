@@ -1,0 +1,17 @@
+; SET pin is mapped to GPIO 1
+; OUT pins are mapped to GPIO 2 and 3
+; no autopull, shift right, 8 bits before new data is grabbed from FIFO
+
+; Running at 125MHz so each instruction cycle is 8ns.
+; We set the data_ready signal low for 160ns(20 cycles) then set it high for 160ns.
+; While the data_ready signal is low we output the next blue/green data bits, so the 
+; blue/green data bits should have settled by the time we set data_ready high.
+
+.program data_transfer
+    set pins, 0                 ; initialize the data_ready signal to 0
+.wrap_target
+    pull ifempty block          ; only if we ran out of bits, 1 cycle
+    out pins, 2 [17]            ; shift out the next blue/green bits, 1 cycle, additional 17 cycles of delay
+    set pins, 1 [19]            ; set data_ready high, 1 cycle, additional 19 cycles of delay
+    set pins, 0                 ; set data_ready low, 1 cycle
+.wrap

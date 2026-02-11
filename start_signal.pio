@@ -1,4 +1,4 @@
-; SET pin 0 is mapped to GPIO 0
+; SET pin is mapped to GPIO 0
 
 ; Running at 125MHz so each instruction cycle is 8ns.
 ; We set the start signal high for 160ns (20 cycles).

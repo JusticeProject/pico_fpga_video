@@ -40,29 +40,25 @@ add_executable(pico_fpga_video main.c )
 pico_set_program_name(pico_fpga_video "pico_fpga_video")
 pico_set_program_version(pico_fpga_video "0.1")
 
-# Generate PIO header
+# Generate PIO headers
 pico_generate_pio_header(pico_fpga_video ${CMAKE_CURRENT_LIST_DIR}/start_signal.pio)
+pico_generate_pio_header(pico_fpga_video ${CMAKE_CURRENT_LIST_DIR}/data_transfer.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(pico_fpga_video 0)
 pico_enable_stdio_usb(pico_fpga_video 1)
 
 # Add the standard library to the build
-target_link_libraries(pico_fpga_video
-        pico_stdlib)
+target_link_libraries(pico_fpga_video pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(pico_fpga_video PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-)
+target_include_directories(pico_fpga_video PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 # Add any user requested libraries
 target_link_libraries(pico_fpga_video 
         hardware_spi
         hardware_adc
         hardware_dma
-        hardware_pio
-        )
+        hardware_pio)
 
 pico_add_extra_outputs(pico_fpga_video)
-
