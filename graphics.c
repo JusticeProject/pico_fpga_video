@@ -137,12 +137,45 @@ void fill_screen(uint8_t color)
 
 void draw_pixel(int x, int y, uint8_t color)
 {
-    // TODO: need input bounds checking
-    
+    // input bounds checking
+    if (x >= X_WIDTH || y >= Y_HEIGHT)
+    {
+        return;
+    }
+
     int index = y*80 + (x >> 2); // 80 bytes per horz line, 4 pixels per byte, shift right by 2 is divide by 4
     int blue_index = (x & 0x3) << 1; // (remainder when dividing by 4) * (2)
     //int green_index = blue_index + 1;
 
     frame_buf[index] &= ~(0x3 << blue_index); // clear the bits
     frame_buf[index] |= (color << blue_index); // set the bits
+}
+
+//*************************************************************************************************
+
+void draw_horz_line(int x_start, int y_start, int length, uint8_t color)
+{
+    // TODO: can I speed this up with memset?
+
+    /*for (int i = 0; i < length; i++)
+    {
+        draw_pixel(x_start + i, y_start, color);
+    }*/
+
+    int x_stop = x_start + length;
+    for (int x = x_start; x < x_stop; x++)
+    {
+        draw_pixel(x, y_start, color);
+    }
+}
+
+//*************************************************************************************************
+
+void fill_rect(int x_start, int y_start, int width, int height, uint8_t color)
+{
+    int y_stop = y_start + height;
+    for (int y = y_start; y < y_stop; y++)
+    {
+        draw_horz_line(x_start, y, width, color);
+    }
 }

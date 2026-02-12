@@ -15,3 +15,5 @@ void do_data_tx();
 
 void fill_screen(uint8_t color);
 void draw_pixel(int x, int y, uint8_t color);
+void draw_horz_line(int x_start, int y_start, int length, uint8_t color);
+void fill_rect(int x_start, int y_start, int width, int height, uint8_t color);

@@ -10,7 +10,6 @@
 #define LED_GPIO 15
 
 volatile uint16_t current_adc = 0;
-volatile uint32_t counter = 0;
 
 //*************************************************************************************************
 
@@ -19,17 +18,18 @@ bool timer_interrupt(struct repeating_timer *t)
     // tell the FPGA we are about to send pixel data
     prepare_for_data_tx();
 
-    counter++;
     current_adc = adc_read();
 
     // TODO: update game state
     // TODO: what if updating the game state takes too long? the start signal could be sent while still sending data
     if (current_adc > 3500)
     {
+        // joystick was moved to the right
         fill_screen(BLUE);
     }
     else if (current_adc < 500)
     {
+        // joystick was moved to the left
         fill_screen(GREEN);
     }
     else
@@ -74,7 +74,7 @@ int main()
 
         if ('s' == cmd)
         {
-            printf("counter = %d  current_adc = %d\n", counter, current_adc);
+            printf("current_adc = %d\n", current_adc);
             printf("success = %d\n", success ? 1 : 0);
         }
         else if ('w' == cmd)
