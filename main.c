@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "hardware/sync.h"
 
 #include "graphics.h"
 
@@ -9,25 +11,50 @@
 
 #define LED_GPIO 15
 
-volatile uint16_t current_adc = 0;
+volatile uint32_t counter0 = 0;
+volatile uint32_t counter1 = 0;
+volatile uint16_t joystick_global = 0;
+spin_lock_t *joystick_spinlock;
 
 //*************************************************************************************************
 
-bool timer_interrupt(struct repeating_timer *t)
+bool timer_interrupt_io(struct repeating_timer *t)
 {
+    counter0++;
+
     // tell the FPGA we are about to send pixel data
     prepare_for_data_tx();
 
-    current_adc = adc_read();
+    // read the joystick
+    uint16_t current_adc = adc_read(); // takes 96 cycles (at 48MHz?) = 2us
+    spin_lock_unsafe_blocking(joystick_spinlock); // does not disable interrupts
+    joystick_global = current_adc;
+    spin_unlock_unsafe(joystick_spinlock);
+
+    // send pixel data to FPGA
+    do_data_tx();
+
+    return true; // tell the system to continue the timer
+}
+
+//*************************************************************************************************
+
+bool timer_interrupt_game(struct repeating_timer *t)
+{
+    counter1++;
+
+    spin_lock_unsafe_blocking(joystick_spinlock);
+    uint16_t joystick = joystick_global;
+    spin_unlock_unsafe(joystick_spinlock);
 
     // TODO: update game state
-    // TODO: what if updating the game state takes too long? the start signal could be sent while still sending data
-    if (current_adc > 3500)
+
+    if (joystick > 3500)
     {
         // joystick was moved to the right
         fill_screen(BLUE);
     }
-    else if (current_adc < 500)
+    else if (joystick < 500)
     {
         // joystick was moved to the left
         fill_screen(GREEN);
@@ -37,10 +64,23 @@ bool timer_interrupt(struct repeating_timer *t)
         draw_pixel(X_WIDTH >> 1, Y_HEIGHT >> 1, WHITE);
     }
 
-    // send pixel data to FPGA
-    do_data_tx();
-
     return true; // tell the system to continue the timer
+}
+
+//*************************************************************************************************
+
+void core1_entry()
+{
+    // repeating timer, once every 33ms, ~30Hz
+    // each core has its own timer pool and its own interrupt
+    struct repeating_timer timer;
+    add_repeating_timer_ms(-33, timer_interrupt_game, NULL, &timer);
+
+    while (true)
+    {
+        // nothing else to do
+        sleep_ms(1000);
+    }
 }
 
 //*************************************************************************************************
@@ -61,9 +101,17 @@ int main()
     // init graphics
     bool success = init_graphics();
 
+    // spinlock is used to synchronize between the two cores
+    int spin_num = spin_lock_claim_unused(true);
+    joystick_spinlock = spin_lock_init(spin_num);
+
     // repeating timer, once every 33ms, ~30Hz
     struct repeating_timer timer;
-    add_repeating_timer_ms(-33, timer_interrupt, NULL, &timer);
+    add_repeating_timer_ms(-33, timer_interrupt_io, NULL, &timer);
+
+    // give time for the joystick value to be initialized before launching the second core
+    sleep_ms(50);
+    multicore_launch_core1(core1_entry);
 
     // keep looping, accepts commands, blinks an LED
     absolute_time_t ledChangedTime = get_absolute_time();
@@ -74,7 +122,7 @@ int main()
 
         if ('s' == cmd)
         {
-            printf("current_adc = %d\n", current_adc);
+            printf("joystick_global = %d, counter0 = %d, counter1 = %d\n", joystick_global, counter0, counter1);
             printf("success = %d\n", success ? 1 : 0);
         }
         else if ('w' == cmd)

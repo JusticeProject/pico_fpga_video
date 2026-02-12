@@ -59,6 +59,7 @@ target_link_libraries(pico_fpga_video
         hardware_spi
         hardware_adc
         hardware_dma
-        hardware_pio)
+        hardware_pio
+        pico_multicore)
 
 pico_add_extra_outputs(pico_fpga_video)

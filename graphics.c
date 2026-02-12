@@ -135,7 +135,7 @@ void fill_screen(uint8_t color)
 
 //*************************************************************************************************
 
-void draw_pixel(int x, int y, uint8_t color)
+void draw_pixel(uint16_t x, uint16_t y, uint8_t color)
 {
     // input bounds checking
     if (x >= X_WIDTH || y >= Y_HEIGHT)
@@ -153,7 +153,7 @@ void draw_pixel(int x, int y, uint8_t color)
 
 //*************************************************************************************************
 
-void draw_horz_line(int x_start, int y_start, int length, uint8_t color)
+void draw_horz_line(uint16_t x_start, uint16_t y_start, uint16_t length, uint8_t color)
 {
     // TODO: can I speed this up with memset?
 
@@ -162,8 +162,8 @@ void draw_horz_line(int x_start, int y_start, int length, uint8_t color)
         draw_pixel(x_start + i, y_start, color);
     }*/
 
-    int x_stop = x_start + length;
-    for (int x = x_start; x < x_stop; x++)
+    uint16_t x_stop = x_start + length;
+    for (uint16_t x = x_start; x < x_stop; x++)
     {
         draw_pixel(x, y_start, color);
     }
@@ -171,10 +171,10 @@ void draw_horz_line(int x_start, int y_start, int length, uint8_t color)
 
 //*************************************************************************************************
 
-void fill_rect(int x_start, int y_start, int width, int height, uint8_t color)
+void fill_rect(uint16_t x_start, uint16_t y_start, uint16_t width, uint16_t height, uint8_t color)
 {
-    int y_stop = y_start + height;
-    for (int y = y_start; y < y_stop; y++)
+    uint16_t y_stop = y_start + height;
+    for (uint16_t y = y_start; y < y_stop; y++)
     {
         draw_horz_line(x_start, y, width, color);
     }
