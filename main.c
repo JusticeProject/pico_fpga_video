@@ -5,6 +5,7 @@
 #include "hardware/clocks.h"
 #include "hardware/sync.h"
 
+#include "game.h"
 #include "graphics.h"
 
 #define JOYSTICK_GPIO 26
@@ -16,13 +17,6 @@ volatile uint32_t counter1 = 0;
 
 volatile uint16_t joystick_global = 2048; // initialized to the middle of the 12 bit ADC
 spin_lock_t *joystick_spinlock;
-
-#define PADDLE_WIDTH 24
-#define PADDLE_HEIGHT 4
-#define PADDLE_MOVEMENT_PER_UPDATE_FAST 2
-const uint16_t MAX_PADDLE_X_POSITION = X_WIDTH - PADDLE_WIDTH;
-volatile uint16_t paddle_x_position = 0;
-volatile uint16_t paddle_y_position = 0;
 
 //*************************************************************************************************
 
@@ -56,48 +50,8 @@ bool timer_interrupt_game(struct repeating_timer *t)
     spin_unlock_unsafe(joystick_spinlock);
 
     // update game state
-
-    if (joystick > 3500)
-    {
-        // joystick was moved to the right
-        
-        // only do something if there is room to move it further right
-        if (paddle_x_position < MAX_PADDLE_X_POSITION)
-        {
-            // erase the old one first
-            fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, BLACK);
-
-            // update the paddle position
-            paddle_x_position += PADDLE_MOVEMENT_PER_UPDATE_FAST;
-
-            // draw the new one
-            fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE);
-        }
-    }
-    else if (joystick < 500)
-    {
-        // joystick was moved to the left
-
-        // only do something if there is room to move it further left
-        if (paddle_x_position > 0)
-        {
-            // erase the old one first
-            fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, BLACK);
-
-            // find the new position, using either a full step or partial step
-            uint16_t step = 
-                (paddle_x_position >= PADDLE_MOVEMENT_PER_UPDATE_FAST) ? PADDLE_MOVEMENT_PER_UPDATE_FAST : paddle_x_position;
-            paddle_x_position -= step;
-
-            // draw the new one
-            fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE);
-        }
-    }
-    else
-    {
-        // simulating the appearance of the ball
-        fill_rect(X_WIDTH >> 1, Y_HEIGHT >> 1, 2, 2, WHITE);
-    }
+    update_paddle(joystick);
+    // TODO: move the ball, do collision detection, hide any bricks that are hit
 
     return true; // tell the system to continue the timer
 }
@@ -107,9 +61,7 @@ bool timer_interrupt_game(struct repeating_timer *t)
 void core1_entry()
 {
     // initialize game state
-    paddle_x_position = (X_WIDTH >> 1) - (PADDLE_WIDTH >> 1);
-    paddle_y_position = Y_HEIGHT - (PADDLE_HEIGHT << 1) - 8;
-    fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE);
+    init_game();
 
     // repeating timer, once every 16800us, ~60Hz
     // each core has its own timer pool and its own interrupt

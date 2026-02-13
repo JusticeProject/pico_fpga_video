@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #define BLACK 0x0
 #define BLUE 0x1
