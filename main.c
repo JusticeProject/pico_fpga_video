@@ -14,12 +14,12 @@
 volatile uint32_t counter0 = 0;
 volatile uint32_t counter1 = 0;
 
-volatile uint16_t joystick_global = 0;
+volatile uint16_t joystick_global = 2048; // initialized to the middle of the 12 bit ADC
 spin_lock_t *joystick_spinlock;
 
 #define PADDLE_WIDTH 24
 #define PADDLE_HEIGHT 4
-#define PADDLE_MOVEMENT_PER_UPDATE 3
+#define PADDLE_MOVEMENT_PER_UPDATE_FAST 2
 const uint16_t MAX_PADDLE_X_POSITION = X_WIDTH - PADDLE_WIDTH;
 volatile uint16_t paddle_x_position = 0;
 volatile uint16_t paddle_y_position = 0;
@@ -68,7 +68,7 @@ bool timer_interrupt_game(struct repeating_timer *t)
             fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, BLACK);
 
             // update the paddle position
-            paddle_x_position += PADDLE_MOVEMENT_PER_UPDATE;
+            paddle_x_position += PADDLE_MOVEMENT_PER_UPDATE_FAST;
 
             // draw the new one
             fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE);
@@ -86,7 +86,7 @@ bool timer_interrupt_game(struct repeating_timer *t)
 
             // find the new position, using either a full step or partial step
             uint16_t step = 
-                (paddle_x_position >= PADDLE_MOVEMENT_PER_UPDATE) ? PADDLE_MOVEMENT_PER_UPDATE : paddle_x_position;
+                (paddle_x_position >= PADDLE_MOVEMENT_PER_UPDATE_FAST) ? PADDLE_MOVEMENT_PER_UPDATE_FAST : paddle_x_position;
             paddle_x_position -= step;
 
             // draw the new one
@@ -111,10 +111,10 @@ void core1_entry()
     paddle_y_position = Y_HEIGHT - (PADDLE_HEIGHT << 1) - 8;
     fill_rect(paddle_x_position, paddle_y_position, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE);
 
-    // repeating timer, once every 33ms, ~30Hz
+    // repeating timer, once every 16800us, ~60Hz
     // each core has its own timer pool and its own interrupt
     struct repeating_timer timer;
-    add_repeating_timer_ms(-33, timer_interrupt_game, NULL, &timer);
+    add_repeating_timer_us(-16800, timer_interrupt_game, NULL, &timer);
 
     while (true)
     {
@@ -127,6 +127,9 @@ void core1_entry()
 
 int main()
 {
+    // overclocking to 250MHz, done first before anything else that relies on the clock
+    set_sys_clock_khz(250000, true);
+
     stdio_init_all();
 
     // we will blink this LED so we know the program is running
@@ -145,13 +148,18 @@ int main()
     int spin_num = spin_lock_claim_unused(true);
     joystick_spinlock = spin_lock_init(spin_num);
 
-    // repeating timer, once every 33ms, ~30Hz
-    struct repeating_timer timer;
-    add_repeating_timer_ms(-33, timer_interrupt_io, NULL, &timer);
-
-    // give time for the joystick value to be initialized before launching the second core
-    sleep_ms(50);
+    // launch the core that handles the game loop
     multicore_launch_core1(core1_entry);
+
+    // this will stagger the two timer interrupts
+    sleep_ms(2);
+
+    // Repeating timer once every 16800us (~60Hz) for the I/O which includes 
+    // reading the joystick and sending data to the FPGA.
+    // We are trying to match the FPGA timing which refreshes the screen every:
+    // (1/25MHz) * 800 * 525 = 0.0168 seconds = 16800 us
+    struct repeating_timer timer;
+    add_repeating_timer_us(-16800, timer_interrupt_io, NULL, &timer);
 
     // keep looping, accepts commands, blinks an LED
     absolute_time_t ledChangedTime = get_absolute_time();
@@ -163,7 +171,7 @@ int main()
         if ('s' == cmd)
         {
             printf("joystick_global = %d, counter0 = %d, counter1 = %d\n", joystick_global, counter0, counter1);
-            printf("success = %d\n", success ? 1 : 0);
+            printf("clk_sys = %d, success = %d\n", clock_get_hz(clk_sys), success ? 1 : 0);
         }
         else if ('w' == cmd)
         {

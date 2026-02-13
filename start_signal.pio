@@ -1,8 +1,8 @@
 ; SET pin is mapped to GPIO 0
 
-; Running at 125MHz so each instruction cycle is 8ns.
-; We set the start signal high for 160ns (20 cycles).
-; Then set it low for 160ns (20 cycles).
+; Running at 250MHz so each instruction cycle is 4ns.
+; We set the start signal high for 80ns (20 cycles).
+; Then set it low for 80ns (20 cycles).
 ; Then wait until we are told to set it again.
 
 .program start_signal

@@ -2,8 +2,8 @@
 ; OUT pins are mapped to GPIO 2 and 3
 ; no autopull, shift right, 8 bits before new data is grabbed from FIFO
 
-; Running at 125MHz so each instruction cycle is 8ns.
-; We set the data_ready signal low for 160ns(20 cycles) then set it high for 160ns.
+; Running at 250MHz so each instruction cycle is 4ns.
+; We set the data_ready signal low for 80ns (20 cycles) then set it high for 80ns.
 ; While the data_ready signal is low we output the next blue/green data bits, so the 
 ; blue/green data bits should have settled by the time we set data_ready high.
 
