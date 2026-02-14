@@ -120,9 +120,9 @@ void check_brick_collision()
                 continue;
             }
 
-            if ((ball_x_position > brick.x_left) && 
+            if ((ball_x_position > brick.x_left) &&   // TODO: (ball_x_position + BALL_DIAMETER - 1) > brick.x_left
                 (ball_x_position < brick.x_right) && 
-                (ball_y_position > brick.y_top) && 
+                (ball_y_position > brick.y_top) &&    // TODO: (ball_y_position + BALL_DIAMETER - 1) > brick.y_top
                 (ball_y_position < brick.y_bottom))
             {
                 brick.visible = false;
