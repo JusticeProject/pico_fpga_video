@@ -6,8 +6,8 @@
 #define GREEN 0x2
 #define WHITE 0x3
 
-#define X_WIDTH 320
-#define Y_HEIGHT 240
+#define X_SCREEN_WIDTH 320
+#define Y_SCREEN_HEIGHT 240
 
 bool init_graphics();
 

@@ -138,7 +138,7 @@ void fill_screen(uint8_t color)
 void draw_pixel(uint16_t x, uint16_t y, uint8_t color)
 {
     // input bounds checking
-    if (x >= X_WIDTH || y >= Y_HEIGHT)
+    if (x >= X_SCREEN_WIDTH || y >= Y_SCREEN_HEIGHT)
     {
         return;
     }

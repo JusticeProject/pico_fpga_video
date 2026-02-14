@@ -49,9 +49,8 @@ bool timer_interrupt_game(struct repeating_timer *t)
     uint16_t joystick = joystick_global;
     spin_unlock_unsafe(joystick_spinlock);
 
-    // update game state
-    update_paddle(joystick);
-    // TODO: move the ball, do collision detection, hide any bricks that are hit
+    // update game state and update the frame buffer
+    update_game_state(joystick);
 
     return true; // tell the system to continue the timer
 }
@@ -139,7 +138,7 @@ int main()
         }
         else if ('e' == cmd)
         {
-            draw_pixel(X_WIDTH-1, Y_HEIGHT-1, WHITE);
+            draw_pixel(X_SCREEN_WIDTH-1, Y_SCREEN_HEIGHT-1, WHITE);
         }
 
         absolute_time_t now = get_absolute_time();
